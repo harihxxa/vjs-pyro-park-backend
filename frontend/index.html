@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>VJS Pyro Park | Fireworks</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="sparkles"></div>
+
+<!-- NAVBAR -->
+<nav>
+<div class="navin">
+
+<a class="brand" href="#home">
+<img src="logo.jpg" alt="VJS Pyro Park Logo">
+<span>VJS <b>PYRO PARK</b></span>
+</a>
+
+<div class="navlinks">
+<a href="#home">Home</a>
+<a href="#products">Products</a>
+<a href="#about">About</a>
+<a href="#contact">Contact</a>
+</div>
+
+<button class="cartbtn" onclick="openCart()">
+🛒 Cart <span id="cartCount">0</span>
+</button>
+
+</div>
+</nav>
+
+
+<!-- MAIN -->
+<main id="home">
+
+<!-- HERO -->
+<section class="hero">
+
+<div class="ring"></div>
+
+<div class="heroContent">
+
+<span class="kicker">
+✨ Premium Fireworks Collection
+</span>
+
+<img
+class="heroLogo"
+src="logo.jpg"
+alt="VJS Pyro Park"
+>
+
+<h1>
+Light Up Every Moment
+</h1>
+
+<p>
+Explore colorful crackers, dazzling sparklers and exciting fireworks —
+all in one premium shopping experience.
+</p>
+
+<div class="actions">
+
+<a class="primary" href="#products">
+🧨 Explore Crackers
+</a>
+
+<a class="secondary" href="#contact">
+📞 Contact Store
+</a>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- PRODUCTS -->
+<section id="products">
+
+<div class="sectionTitle">
+
+<h2>
+Our Fireworks Collection
+</h2>
+
+<p>
+Choose your favourite crackers and add them to your cart.
+</p>
+
+</div>
+
+<div
+class="categories"
+id="categories">
+</div>
+
+
+<div class="tools">
+
+<input
+id="search"
+class="search"
+type="text"
+placeholder="🔍 Search crackers..."
+oninput="render()"
+>
+
+</div>
+
+
+<div
+id="grid"
+class="grid">
+</div>
+
+</section>
+
+
+<!-- ABOUT -->
+<section id="about">
+
+<div class="sectionTitle">
+
+<h2>
+Why VJS Pyro Park?
+</h2>
+
+<p>
+A colorful fireworks collection designed for a premium customer experience.
+</p>
+
+</div>
+
+
+<div class="infoGrid">
+
+<div class="info">
+
+<div class="ico">🎆</div>
+
+<h3>
+Beautiful Collection
+</h3>
+
+<p>
+Browse fireworks in clean categories with product images and animated cards.
+</p>
+
+</div>
+
+
+<div class="info">
+
+<div class="ico">💰</div>
+
+<h3>
+Clear Pricing
+</h3>
+
+<p>
+Prices are displayed clearly so customers can compare products quickly.
+</p>
+
+</div>
+
+
+<div class="info">
+
+<div class="ico">🛒</div>
+
+<h3>
+Easy Ordering
+</h3>
+
+<p>
+Add products to cart and send your order directly through WhatsApp.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- CONTACT -->
+<section id="contact">
+
+<div class="sectionTitle">
+
+<h2>
+Visit / Contact Us
+</h2>
+
+<p>
+Contact VJS Pyro Park for fireworks and orders.
+</p>
+
+</div>
+
+
+<div class="contactGrid">
+
+<div class="info">
+
+<div class="ico">📍</div>
+
+<h3>
+Store Address
+</h3>
+
+<p>
+VJS Pyro Park<br>
+Vadamalapuram Check Post Near,<br>
+Kilthiruthangal
+</p>
+
+<a
+class="contactBtn"
+href="https://maps.app.goo.gl/8PmJ5wuTcw1ygiL47?g_st=aw"
+target="_blank">
+📍 Get Directions
+</a>
+
+</div>
+
+
+<div class="info">
+
+<div class="ico">📞</div>
+
+<h3>
+Call Us
+</h3>
+
+<p>
+9150582228<br>
+8072080061
+</p>
+
+<div class="contactButtons">
+
+<a
+class="contactBtn"
+href="tel:9150582228">
+📞 Call 9150582228
+</a>
+
+<a
+class="contactBtn"
+href="tel:8072080061">
+📞 Call 8072080061
+</a>
+
+</div>
+
+</div>
+
+
+<div class="info">
+
+<div class="ico">💬</div>
+
+<h3>
+WhatsApp
+</h3>
+
+<p>
+Order products or ask for details directly on WhatsApp.
+</p>
+
+<a
+class="contactBtn whatsappBtn"
+href="https://wa.me/919150582228?text=Hello%20VJS%20Pyro%20Park"
+target="_blank">
+💬 WhatsApp Us
+</a>
+
+</div>
+
+
+<div class="info">
+
+<div class="ico">📧</div>
+
+<h3>
+Email
+</h3>
+
+<p>
+VJSpyropark@gmail.com
+</p>
+
+<a
+class="contactBtn"
+href="mailto:VJSpyropark@gmail.com">
+📧 Send Email
+</a>
+
+</div>
+
+
+<div class="info">
+
+<div class="ico">📸</div>
+
+<h3>
+Instagram
+</h3>
+
+<p>
+Follow us on Instagram
+</p>
+
+<a
+class="contactBtn"
+href="https://www.instagram.com/vjs_pyropark/"
+target="_blank">
+📸 @vjs_pyropark
+</a>
+
+</div>
+
+</div>
+
+
+<!-- GOOGLE MAP -->
+<div class="mapBox">
+
+<h2>📍 Find Us on Google Maps</h2>
+
+<iframe
+src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3935.0625338994287!2d77.8275169!3d9.503290800000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06cf004b0735d3%3A0x3fb7a93376e490ab!2sVjs%20pyro%20park!5e0!3m2!1sen!2sin!4v1789580793089!5m2!1sen!2sin"
+width="600"
+height="450"
+style="border:0;"
+allowfullscreen=""
+loading="lazy"
+referrerpolicy="strict-origin-when-cross-origin">
+</iframe>
+
+</div>
+
+</section>
+
+</main>
+
+
+<!-- FOOTER -->
+<footer>
+
+© 2026
+<b>VJS Pyro Park</b>
+• Fireworks for Every Moment
+
+</footer>
+
+
+<!-- CART DRAWER -->
+<div
+class="drawer"
+id="drawer"
+onclick="if(event.target===this)closeCart()">
+
+<div class="panel">
+
+<div class="panelHead">
+
+<h2>
+🛒 Your Cart
+</h2>
+
+<button
+class="close"
+onclick="closeCart()">
+✕
+</button>
+
+</div>
+
+<div id="cartItems">
+</div>
+
+<div class="total">
+
+<span>
+Total
+</span>
+
+<span id="cartTotal">
+₹0
+</span>
+
+</div>
+
+<button
+class="wa"
+onclick="sendWhatsApp()">
+📲 Order via WhatsApp
+</button>
+
+</div>
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
