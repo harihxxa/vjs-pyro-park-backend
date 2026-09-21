@@ -12,18 +12,23 @@ exports.login = async (req, res) => {
       });
     }
 
-    const [rows] = await db.query(
-      "SELECT * FROM users WHERE email = ? LIMIT 1",
+    const result = await db.query(
+      `
+      SELECT *
+      FROM users
+      WHERE email = $1
+      LIMIT 1
+      `,
       [email]
     );
 
-    if (!rows.length) {
+    if (!result.rows.length) {
       return res.status(401).json({
         message: "Invalid login"
       });
     }
 
-    const user = rows[0];
+    const user = result.rows[0];
 
     const valid = await bcrypt.compare(
       password,
@@ -48,7 +53,8 @@ exports.login = async (req, res) => {
       }
     );
 
-    res.json({
+    return res.json({
+      success: true,
       token,
       user: {
         id: user.id,
@@ -60,7 +66,7 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: error.message
     });
   }

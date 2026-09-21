@@ -12,7 +12,7 @@ exports.list = async (req, res) => {
             FROM products p
             LEFT JOIN categories c
                 ON c.id = p.category_id
-            WHERE p.active = 1
+            WHERE p.active = TRUE
         `;
 
         const values = [];
@@ -20,8 +20,8 @@ exports.list = async (req, res) => {
         if (q) {
             sql += `
                 AND (
-                    p.name LIKE ?
-                    OR p.code LIKE ?
+                    p.name ILIKE $1
+                    OR p.code ILIKE $2
                 )
             `;
 
@@ -29,8 +29,10 @@ exports.list = async (req, res) => {
         }
 
         if (category) {
+            const categoryParam = values.length + 1;
+
             sql += `
-                AND c.name = ?
+                AND c.name = $${categoryParam}
             `;
 
             values.push(category);
@@ -40,10 +42,10 @@ exports.list = async (req, res) => {
             ORDER BY p.id DESC
         `;
 
-        const [rows] = await db.query(sql, values);
+        const result = await db.query(sql, values);
 
         return res.json({
-            products: rows
+            products: result.rows
         });
 
     } catch (error) {
@@ -59,7 +61,7 @@ exports.list = async (req, res) => {
 // Get single product
 exports.get = async (req, res) => {
     try {
-        const [rows] = await db.query(
+        const result = await db.query(
             `
             SELECT
                 p.*,
@@ -67,19 +69,19 @@ exports.get = async (req, res) => {
             FROM products p
             LEFT JOIN categories c
                 ON c.id = p.category_id
-            WHERE p.id = ?
+            WHERE p.id = $1
             `,
             [req.params.id]
         );
 
-        if (!rows.length) {
+        if (!result.rows.length) {
             return res.status(404).json({
                 message: "Product not found"
             });
         }
 
         return res.json({
-            product: rows[0]
+            product: result.rows[0]
         });
 
     } catch (error) {
@@ -113,7 +115,7 @@ exports.create = async (req, res) => {
             });
         }
 
-        const [result] = await db.query(
+        const result = await db.query(
             `
             INSERT INTO products
             (
@@ -127,7 +129,8 @@ exports.create = async (req, res) => {
                 stock,
                 icon
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING id
             `,
             [
                 code,
@@ -143,7 +146,7 @@ exports.create = async (req, res) => {
         );
 
         return res.status(201).json({
-            id: result.insertId
+            id: result.rows[0].id
         });
 
     } catch (error) {

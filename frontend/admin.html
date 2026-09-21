@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>VJS Pyro Park - Admin Dashboard</title>
+
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+
+body{
+    font-family:Arial,sans-serif;
+    background:#0b0b0b;
+    color:#fff;
+}
+
+
+header{
+    background:#151515;
+    border-bottom:1px solid #333;
+    padding:18px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:sticky;
+    top:0;
+    z-index:10;
+}
+
+
+header h1{
+    color:#c6a15b;
+    font-size:24px;
+}
+
+
+button{
+    cursor:pointer;
+}
+
+
+#logoutBtn{
+    background:#c6a15b;
+    color:#111;
+    border:none;
+    padding:10px 18px;
+    border-radius:7px;
+    font-weight:bold;
+}
+
+
+.container{
+    width:95%;
+    max-width:1400px;
+    margin:30px auto;
+}
+
+
+.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+
+.top h2{
+    font-size:26px;
+}
+
+
+#refreshBtn{
+    background:#222;
+    color:#fff;
+    border:1px solid #555;
+    padding:10px 18px;
+    border-radius:7px;
+}
+
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+    margin-bottom:25px;
+}
+
+
+.card{
+    background:#151515;
+    border:1px solid #333;
+    border-radius:12px;
+    padding:22px;
+}
+
+
+.card p{
+    color:#999;
+    margin-bottom:8px;
+}
+
+
+.card h3{
+    color:#c6a15b;
+    font-size:26px;
+}
+
+
+.filters{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+
+.filterBtn{
+    background:#222;
+    color:#fff;
+    border:1px solid #555;
+    padding:9px 16px;
+    border-radius:7px;
+}
+
+
+.filterBtn.active{
+    background:#c6a15b;
+    color:#111;
+    border-color:#c6a15b;
+    font-weight:bold;
+}
+
+
+.table-box{
+    background:#151515;
+    border:1px solid #333;
+    border-radius:12px;
+    overflow-x:auto;
+}
+
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1100px;
+}
+
+
+th,td{
+    padding:14px;
+    text-align:left;
+    border-bottom:1px solid #333;
+}
+
+
+th{
+    background:#202020;
+    color:#c6a15b;
+}
+
+
+td{
+    color:#ddd;
+}
+
+
+tr:hover{
+    background:#1d1d1d;
+}
+
+
+.status{
+    display:inline-block;
+    padding:6px 11px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+
+.status-new{
+    background:#3a2d0b;
+    color:#ffd76a;
+}
+
+
+.status-confirmed{
+    background:#102d3a;
+    color:#62c9ff;
+}
+
+
+.status-delivered{
+    background:#10351d;
+    color:#4cff7b;
+}
+
+
+.actionBtn{
+    border:none;
+    padding:8px 12px;
+    border-radius:6px;
+    font-weight:bold;
+    margin:2px;
+}
+
+
+.confirmBtn{
+    background:#c6a15b;
+    color:#111;
+}
+
+
+.deliverBtn{
+    background:#20a84b;
+    color:#fff;
+}
+
+
+.deliveredText{
+    color:#4cff7b;
+    font-weight:bold;
+}
+
+
+.empty{
+    padding:35px;
+    text-align:center;
+    color:#999;
+}
+
+
+#message{
+    margin-bottom:15px;
+    color:#c6a15b;
+}
+
+
+@media(max-width:900px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+
+@media(max-width:600px){
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+
+    header h1{
+        font-size:19px;
+    }
+
+
+    .container{
+        width:92%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>VJS Pyro Park Admin</h1>
+
+    <button id="logoutBtn">
+        Logout
+    </button>
+
+</header>
+
+
+<div class="container">
+
+
+    <div class="top">
+
+        <h2>Orders Dashboard</h2>
+
+        <button id="refreshBtn">
+            🔄 Refresh Orders
+        </button>
+
+    </div>
+
+
+    <div id="message"></div>
+
+
+    <div class="stats">
+
+        <div class="card">
+            <p>Total Orders</p>
+            <h3 id="totalOrders">0</h3>
+        </div>
+
+
+        <div class="card">
+            <p>New Orders</p>
+            <h3 id="newOrders">0</h3>
+        </div>
+
+
+        <div class="card">
+            <p>This Week Sales</p>
+            <h3 id="weekSales">₹0.00</h3>
+        </div>
+
+
+        <div class="card">
+            <p>This Month Sales</p>
+            <h3 id="monthSales">₹0.00</h3>
+        </div>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="card">
+            <p>Total Delivered Sales</p>
+            <h3 id="totalSales">₹0.00</h3>
+        </div>
+
+
+        <div class="card">
+            <p>Confirmed Orders</p>
+            <h3 id="confirmedOrders">0</h3>
+        </div>
+
+    </div>
+
+
+    <div class="filters">
+
+        <button
+            class="filterBtn active"
+            data-filter="ACTIVE"
+        >
+            Active Orders
+        </button>
+
+
+        <button
+            class="filterBtn"
+            data-filter="NEW"
+        >
+            New
+        </button>
+
+
+        <button
+            class="filterBtn"
+            data-filter="CONFIRMED"
+        >
+            Confirmed
+        </button>
+
+
+        <button
+            class="filterBtn"
+            data-filter="DELIVERED"
+        >
+            ✓ Delivered
+        </button>
+
+
+        <button
+            class="filterBtn"
+            data-filter="ALL"
+        >
+            All Orders
+        </button>
+
+    </div>
+
+
+    <div class="table-box">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Order No</th>
+
+                    <th>Customer</th>
+
+                    <th>Phone</th>
+
+                    <th>City</th>
+
+                    <th>Address</th>
+
+                    <th>Total</th>
+
+                    <th>Status</th>
+
+                    <th>Date</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="ordersTable">
+
+                <tr>
+
+                    <td
+                        colspan="9"
+                        class="empty"
+                    >
+                        Loading orders...
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+const API_URL =
+    "http://localhost:5000";
+
+
+const token =
+    localStorage.getItem("adminToken");
+
+
+let allOrders = [];
+
+
+let currentFilter =
+    "ACTIVE";
+
+
+if(!token){
+
+    window.location.href =
+        "registration.html";
+
+}
+
+
+/* HTML SECURITY */
+
+function escapeHTML(value){
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        value ?? "";
+
+    return div.innerHTML;
+}
+
+
+/* LOAD ORDERS */
+
+async function loadOrders(){
+
+    const table =
+        document.getElementById(
+            "ordersTable"
+        );
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+
+    table.innerHTML = `
+        <tr>
+            <td
+                colspan="9"
+                class="empty"
+            >
+                Loading orders...
+            </td>
+        </tr>
+    `;
+
+
+    try{
+
+        const response =
+            await fetch(
+                `${API_URL}/api/orders`,
+                {
+                    method:"GET",
+
+                    headers:{
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(response.status === 401){
+
+            localStorage.removeItem(
+                "adminToken"
+            );
+
+            localStorage.removeItem(
+                "adminUser"
+            );
+
+            window.location.href =
+                "registration.html";
+
+            return;
+        }
+
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                "Failed to load orders"
+            );
+        }
+
+
+        allOrders =
+            data.orders || [];
+
+
+        updateStats();
+
+        renderOrders();
+
+
+        message.textContent =
+            `Loaded ${allOrders.length} order(s).`;
+
+
+    }catch(error){
+
+        console.error(error);
+
+
+        table.innerHTML = `
+            <tr>
+                <td
+                    colspan="9"
+                    class="empty"
+                >
+                    Failed to load orders.
+                </td>
+            </tr>
+        `;
+
+
+        message.textContent =
+            "Backend connection failed: " +
+            error.message;
+    }
+}
+
+
+/* STATS */
+
+function updateStats(){
+
+    const delivered =
+        allOrders.filter(
+            o =>
+                String(o.status).toUpperCase()
+                === "DELIVERED"
+        );
+
+
+    const newOrders =
+        allOrders.filter(
+            o =>
+                String(o.status).toUpperCase()
+                === "NEW"
+        );
+
+
+    const confirmed =
+        allOrders.filter(
+            o =>
+                String(o.status).toUpperCase()
+                === "CONFIRMED"
+        );
+
+
+    const deliveredSales =
+        delivered.reduce(
+            (sum,o) =>
+                sum + Number(o.total || 0),
+            0
+        );
+
+
+    const now =
+        new Date();
+
+
+    const weekStart =
+        new Date(now);
+
+
+    const day =
+        weekStart.getDay();
+
+
+    const diff =
+        day === 0 ? 6 : day - 1;
+
+
+    weekStart.setDate(
+        weekStart.getDate() - diff
+    );
+
+
+    weekStart.setHours(
+        0,0,0,0
+    );
+
+
+    const monthStart =
+        new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            1
+        );
+
+
+    const weekSales =
+        delivered
+        .filter(o =>
+            new Date(o.created_at)
+            >= weekStart
+        )
+        .reduce(
+            (sum,o) =>
+                sum + Number(o.total || 0),
+            0
+        );
+
+
+    const monthSales =
+        delivered
+        .filter(o =>
+            new Date(o.created_at)
+            >= monthStart
+        )
+        .reduce(
+            (sum,o) =>
+                sum + Number(o.total || 0),
+            0
+        );
+
+
+    document.getElementById(
+        "totalOrders"
+    ).textContent =
+        allOrders.length;
+
+
+    document.getElementById(
+        "newOrders"
+    ).textContent =
+        newOrders.length;
+
+
+    document.getElementById(
+        "confirmedOrders"
+    ).textContent =
+        confirmed.length;
+
+
+    document.getElementById(
+        "totalSales"
+    ).textContent =
+        "₹" +
+        deliveredSales.toFixed(2);
+
+
+    document.getElementById(
+        "weekSales"
+    ).textContent =
+        "₹" +
+        weekSales.toFixed(2);
+
+
+    document.getElementById(
+        "monthSales"
+    ).textContent =
+        "₹" +
+        monthSales.toFixed(2);
+}
+
+
+/* RENDER */
+
+function renderOrders(){
+
+    const table =
+        document.getElementById(
+            "ordersTable"
+        );
+
+
+    let orders =
+        [...allOrders];
+
+
+    if(currentFilter === "ACTIVE"){
+
+        orders =
+            orders.filter(
+                o =>
+                    String(o.status)
+                    .toUpperCase()
+                    !== "DELIVERED"
+            );
+    }
+
+
+    if(
+        currentFilter !== "ACTIVE" &&
+        currentFilter !== "ALL"
+    ){
+
+        orders =
+            orders.filter(
+                o =>
+                    String(o.status)
+                    .toUpperCase()
+                    === currentFilter
+            );
+    }
+
+
+    if(!orders.length){
+
+        table.innerHTML = `
+            <tr>
+                <td
+                    colspan="9"
+                    class="empty"
+                >
+                    No orders found.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    table.innerHTML = "";
+
+
+    orders.forEach(order => {
+
+        const row =
+            document.createElement("tr");
+
+
+        const status =
+            String(
+                order.status || "NEW"
+            ).toUpperCase();
+
+
+        let statusClass =
+            "status-new";
+
+
+        if(status === "CONFIRMED"){
+
+            statusClass =
+                "status-confirmed";
+        }
+
+
+        if(status === "DELIVERED"){
+
+            statusClass =
+                "status-delivered";
+        }
+
+
+        const date =
+            order.created_at
+            ? new Date(
+                order.created_at
+            ).toLocaleString("en-IN")
+            : "-";
+
+
+        let action = "";
+
+
+        if(status === "NEW"){
+
+            action = `
+                <button
+                    class="actionBtn confirmBtn"
+                    onclick="updateStatus(
+                        ${order.id},
+                        'CONFIRMED'
+                    )"
+                >
+                    Confirm
+                </button>
+            `;
+        }
+
+
+        else if(status === "CONFIRMED"){
+
+            action = `
+                <button
+                    class="actionBtn deliverBtn"
+                    onclick="updateStatus(
+                        ${order.id},
+                        'DELIVERED'
+                    )"
+                >
+                    ✓ Mark Delivered
+                </button>
+            `;
+        }
+
+
+        else if(status === "DELIVERED"){
+
+            action = `
+                <span class="deliveredText">
+                    ✓ Delivered
+                </span>
+            `;
+        }
+
+
+        row.innerHTML = `
+
+            <td>
+                ${escapeHTML(
+                    order.order_number
+                )}
+            </td>
+
+
+            <td>
+                ${escapeHTML(
+                    order.customer_name
+                )}
+            </td>
+
+
+            <td>
+                ${escapeHTML(
+                    order.phone || "-"
+                )}
+            </td>
+
+
+            <td>
+                ${escapeHTML(
+                    order.city || "-"
+                )}
+            </td>
+
+
+            <td>
+                ${escapeHTML(
+                    order.address || "-"
+                )}
+            </td>
+
+
+            <td>
+                ₹${Number(
+                    order.total || 0
+                ).toFixed(2)}
+            </td>
+
+
+            <td>
+
+                <span class="
+                    status
+                    ${statusClass}
+                ">
+
+                    ${
+                        status === "DELIVERED"
+                        ? "✓ Delivered"
+                        : escapeHTML(status)
+                    }
+
+                </span>
+
+            </td>
+
+
+            <td>
+                ${escapeHTML(date)}
+            </td>
+
+
+            <td>
+                ${action}
+            </td>
+
+        `;
+
+
+        table.appendChild(row);
+
+    });
+}
+
+
+/* UPDATE STATUS */
+
+async function updateStatus(
+    orderId,
+    status
+){
+
+    try{
+
+        const response =
+            await fetch(
+                `${API_URL}/api/orders/${orderId}/status`,
+                {
+                    method:"PATCH",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json",
+
+                        "Authorization":
+                            `Bearer ${token}`
+                    },
+
+                    body:JSON.stringify({
+                        status
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(response.status === 401){
+
+            localStorage.removeItem(
+                "adminToken"
+            );
+
+            window.location.href =
+                "registration.html";
+
+            return;
+        }
+
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                "Status update failed"
+            );
+        }
+
+
+        await loadOrders();
+
+
+    }catch(error){
+
+        alert(
+            "Unable to update order:\n" +
+            error.message
+        );
+    }
+}
+
+
+/* FILTER BUTTONS */
+
+document.querySelectorAll(
+    ".filterBtn"
+).forEach(button => {
+
+    button.addEventListener(
+        "click",
+        function(){
+
+            document
+                .querySelectorAll(
+                    ".filterBtn"
+                )
+                .forEach(btn =>
+                    btn.classList.remove(
+                        "active"
+                    )
+                );
+
+
+            this.classList.add(
+                "active"
+            );
+
+
+            currentFilter =
+                this.dataset.filter;
+
+
+            renderOrders();
+
+        }
+    );
+
+});
+
+
+/* REFRESH */
+
+document.getElementById(
+    "refreshBtn"
+).addEventListener(
+    "click",
+    loadOrders
+);
+
+
+/* LOGOUT */
+
+document.getElementById(
+    "logoutBtn"
+).addEventListener(
+    "click",
+    function(){
+
+        localStorage.removeItem(
+            "adminToken"
+        );
+
+        localStorage.removeItem(
+            "adminUser"
+        );
+
+        window.location.href =
+            "registration.html";
+    }
+);
+
+
+/* FIRST LOAD */
+
+loadOrders();
+
+</script>
+
+
+</body>
+
+</html>

@@ -191,92 +191,102 @@ async function loadBackendProducts(){
 
     try{
 
-        const response=
-            await fetch(
-                BACKEND_URL+"/api/products"
-            );
+        const response = await fetch(
+            BACKEND_URL + "/api/products"
+        );
 
         if(!response.ok){
-
             throw new Error(
-                "Products API returned HTTP "+response.status
+                "Products API returned HTTP " + response.status
             );
-
         }
 
-        const data=
-            await response.json();
+        const data = await response.json();
 
         if(
             !data.products ||
             !Array.isArray(data.products) ||
-            data.products.length===0
+            data.products.length === 0
         ){
-
             throw new Error(
                 "No products received from backend"
             );
-
         }
 
+        /*
+         * Backend products-ஐ மட்டும் update பண்ணும்.
+         * Local-ல் இருக்கும் 119 products DELETE ஆகாது.
+         */
 
-        const backendProducts=
-            data.products.map(p=>{
+        data.products.forEach(p => {
 
-                let category=
-                    p.category_name ||
-                    p.category ||
-                    CATEGORY_MAP[Number(p.category_id)] ||
-                    "Others";
+            const backendId = Number(p.id);
 
-                return{
+            const index = PRODUCTS.findIndex(
+                product => Number(product.id) === backendId
+            );
 
-                    id:Number(p.id),
+            let category =
+                p.category_name ||
+                p.category ||
+                CATEGORY_MAP[Number(p.category_id)] ||
+                "Others";
 
-                    name:p.name,
+            const updatedProduct = {
 
-                    price:Number(
-                        p.final_rate ??
-                        p.price ??
-                        0
-                    ),
+                id: backendId,
 
-                    offer:Number(
-                        p.mrp ??
-                        p.offer ??
-                        0
-                    ),
+                name: p.name,
 
-                    cat:category
+                price: Number(
+                    p.final_rate ??
+                    p.price ??
+                    0
+                ),
 
+                offer: Number(
+                    p.mrp ??
+                    p.offer ??
+                    0
+                ),
+
+                cat: category
+
+            };
+
+            /*
+             * Same ID already exists:
+             * backend price/details update
+             */
+
+            if(index !== -1){
+
+                PRODUCTS[index] = {
+                    ...PRODUCTS[index],
+                    ...updatedProduct
                 };
 
-            });
+            }
 
+            /*
+             * Backend-ல் new product இருந்தால்
+             * local list-க்கும் add ஆகும்.
+             */
 
-        PRODUCTS.length=0;
+            else{
 
-        backendProducts.forEach(p=>{
-            PRODUCTS.push(p);
+                PRODUCTS.push(updatedProduct);
+
+            }
+
         });
 
 
-        console.log(
-            "================================"
-        );
-
-        console.log(
-            "MYSQL PRODUCTS LOADED ✅"
-        );
-
-        console.log(
-            "Products received:",
-            PRODUCTS.length
-        );
-
-        console.log(
-            "================================"
-        );
+        console.log("================================");
+        console.log("PRODUCT LIST LOADED ✅");
+        console.log("Backend products:", data.products.length);
+        console.log("Total website products:", PRODUCTS.length);
+        console.log("================================");
 
 
         categories();
@@ -288,9 +298,14 @@ async function loadBackendProducts(){
     catch(error){
 
         console.error(
-            "MYSQL PRODUCTS LOAD FAILED ❌",
+            "PRODUCT LOAD FAILED ❌",
             error
         );
+
+        /*
+         * Backend fail ஆனாலும்
+         * local 119 products website-ல் இருக்கும்.
+         */
 
         categories();
         render();
@@ -481,18 +496,28 @@ function render(){
 
 function addToCart(id){
 
-    const found =
-        cart.find(x => x.id === id);
+    const product = PRODUCTS.find(
+        p => Number(p.id) === Number(id)
+    );
+
+    if(!product){
+        alert("Product not found");
+        return;
+    }
+
+    const found = cart.find(
+        x => Number(x.id) === Number(product.id)
+    );
 
     if(found){
 
         found.qty++;
 
-    }
-    else{
+    }else{
 
         cart.push({
-            id: id,
+            id: Number(product.id),
+            name: product.name,
             qty: 1
         });
 
@@ -500,25 +525,13 @@ function addToCart(id){
 
     saveCart();
 
-    const drawer =
-        document.getElementById("drawer");
-
-    /*
-      Cart already open இருந்தால்
-      close/reopen செய்யாமல் list மட்டும் update ஆகும்.
-    */
+    const drawer = document.getElementById("drawer");
 
     if(drawer && drawer.classList.contains("open")){
-
         renderCart();
-
-    }
-    else{
-
+    }else{
         openCart();
-
     }
-
 }
 
 
@@ -702,6 +715,8 @@ function closeCart(){
 
 /* WHATSAPP ORDER */
 
+/* WHATSAPP ORDER */
+
 async function sendWhatsApp(){
 
     if(cart.length === 0){
@@ -709,28 +724,19 @@ async function sendWhatsApp(){
         return;
     }
 
-
-    /* CUSTOMER NAME */
-
-    const customerName =
-        prompt("Enter your Name:");
+    const customerName = prompt("Enter your Name:");
 
     if(!customerName || !customerName.trim()){
         alert("Please enter your name.");
         return;
     }
 
-
-    /* PHONE NUMBER */
-
-    const customerPhone =
-        prompt("Enter your Phone Number:");
+    const customerPhone = prompt("Enter your Phone Number:");
 
     if(!customerPhone || !customerPhone.trim()){
         alert("Please enter your phone number.");
         return;
     }
-
 
     const cleanPhone =
         customerPhone.replace(/\D/g, "");
@@ -740,55 +746,90 @@ async function sendWhatsApp(){
         return;
     }
 
+    const city = prompt("Enter your City:");
 
-    /* ADDRESS */
+    if(!city || !city.trim()){
+        alert("Please enter your city.");
+        return;
+    }
 
-    const address =
-        prompt("Enter your Delivery Address:");
+    const address = prompt("Enter your Delivery Address:");
 
     if(!address || !address.trim()){
         alert("Please enter your delivery address.");
         return;
     }
 
-
-    /* ORDER ITEMS */
-
     let total = 0;
 
-    const lines = cart.map(item => {
+    const lines = [];
 
-        const product =
-            PRODUCTS.find(
-                p => Number(p.id) === Number(item.id)
+    const orderItems = [];
+
+    for(const item of cart){
+
+        /* FIRST: find by ID */
+
+        let product = PRODUCTS.find(
+            p => Number(p.id) === Number(item.id)
+        );
+
+        /* SECOND: if ID mismatch, find by PRODUCT NAME */
+
+        if(!product && item.name){
+
+            const cartName =
+                String(item.name)
+                    .trim()
+                    .toLowerCase();
+
+            product = PRODUCTS.find(
+                p =>
+                    String(p.name)
+                        .trim()
+                        .toLowerCase() === cartName
             );
+        }
 
         if(!product){
-            return null;
+
+            alert(
+                "Product not found.\n\n" +
+                "Please refresh the page and add the product again."
+            );
+
+            return;
         }
+
+        const qty = Number(item.qty) || 1;
 
         const price =
             Number(product.price || 0);
 
         const subtotal =
-            price * Number(item.qty);
+            price * qty;
 
         total += subtotal;
 
-        return (
-            `${product.name} x ${item.qty} = ₹${subtotal.toFixed(2)}`
+        lines.push(
+            `${product.name} x ${qty} = \u20B9${subtotal.toFixed(2)}`
         );
 
-    }).filter(Boolean);
+        orderItems.push({
 
+            id:
+                Number(product.id),
 
-    if(lines.length === 0){
-        alert("Unable to find products in cart.");
-        return;
+            name:
+                product.name,
+
+            qty:
+                qty
+        });
     }
 
 
-    /* SAVE ORDER TO DATABASE */
+    /* SAVE ORDER */
 
     try{
 
@@ -812,7 +853,7 @@ async function sendWhatsApp(){
                             customerPhone.trim(),
 
                         city:
-                            "",
+                            city.trim(),
 
                         address:
                             address.trim(),
@@ -821,14 +862,7 @@ async function sendWhatsApp(){
                             "Website WhatsApp Order",
 
                         items:
-                            cart.map(item => ({
-                                id:
-                                    Number(item.id),
-
-                                qty:
-                                    Number(item.qty)
-                            }))
-
+                            orderItems
                     })
                 }
             );
@@ -840,10 +874,17 @@ async function sendWhatsApp(){
 
         if(!response.ok){
 
+            console.error(
+                "ORDER DATABASE ERROR:",
+                data
+            );
+
             alert(
                 "Database Error:\n\n" +
-                (data.message ||
-                "Unable to save order.")
+                (
+                    data.message ||
+                    "Unable to save order."
+                )
             );
 
             return;
@@ -853,21 +894,22 @@ async function sendWhatsApp(){
         /* WHATSAPP MESSAGE */
 
         const message =
-`🎆 VJ SPYRO PARK - NEW ORDER
+`\u{1F386} VJS PYRO PARK - NEW ORDER
 
-👤 Name: ${customerName.trim()}
-📱 Phone: ${customerPhone.trim()}
+\u{1F464} Name: ${customerName.trim()}
+\u{1F4F1} Phone: ${customerPhone.trim()}
+\u{1F3D9}\uFE0F City: ${city.trim()}
 
-📍 Delivery Address:
+\u{1F4CD} Delivery Address:
 ${address.trim()}
 
-🛒 ORDER DETAILS
+\u{1F6D2} ORDER DETAILS
 
 ${lines.join("\n")}
 
-💰 Total: ₹${total.toFixed(2)}
+\u{1F4B0} Total: \u20B9${total.toFixed(2)}
 
-Thank you for choosing VJ Spyro Park! 🎆`;
+Thank you for choosing VJS Pyro Park! \u{1F386}`;
 
 
         const whatsappURL =
@@ -875,10 +917,13 @@ Thank you for choosing VJ Spyro Park! 🎆`;
             encodeURIComponent(message);
 
 
-        window.location.href = whatsappURL;
+        /* OPEN WHATSAPP */
 
+        window.location.href =
+            whatsappURL;
 
     }
+
     catch(error){
 
         console.error(
@@ -890,9 +935,7 @@ Thank you for choosing VJ Spyro Park! 🎆`;
             "Unable to connect to server.\n\n" +
             "Please try again."
         );
-
     }
-
 }
 
 /* START */
