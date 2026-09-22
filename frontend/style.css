@@ -873,3 +873,44 @@ height:170px
 }
 
 }
+
+/* CONTINUE SHOPPING - MOBILE CART ONLY */
+
+.continueShopping{
+    width:100%;
+    padding:13px;
+    margin-bottom:10px;
+    border:1px solid #3a3313;
+    border-radius:12px;
+    background:#17150c;
+    color:#ffd33d;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.continueShopping:hover{
+    background:#ffd33d;
+    color:#17120a;
+}
+
+
+/* MOBILE CART ONLY */
+
+@media(max-width:650px){
+
+    .panel{
+        top:auto;
+        bottom:0;
+        right:0;
+        width:100%;
+        height:auto;
+        max-height:75vh;
+        border-left:0;
+        border-top:1px solid #333342;
+        border-radius:20px 20px 0 0;
+        padding:18px;
+        overflow-y:auto;
+        box-shadow:0 -20px 60px rgba(0,0,0,.55);
+    }
+
+}

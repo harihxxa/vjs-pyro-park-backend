@@ -955,3 +955,21 @@ saveCart();
 testBackend();
 
 loadBackendProducts();
+
+function continueShopping(){
+
+    closeCart();
+
+    const products =
+        document.getElementById("products");
+
+    if(products){
+
+        products.scrollIntoView({
+            behavior:"smooth",
+            block:"start"
+        });
+
+    }
+
+}
