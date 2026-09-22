@@ -121,7 +121,7 @@ let PRODUCTS=[
 ];
 
 const WHATSAPP_NUMBER="919150582228";
-const BACKEND_URL="http://localhost:5000";
+const BACKEND_URL="https://vjs-pyro-park-backend.onrender.com";
 
 let activeCat="All";
 
