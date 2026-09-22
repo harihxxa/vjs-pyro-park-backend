@@ -1,13 +1,22 @@
 const db = require("../config/db");
 
 
-/* CREATE ORDER */
+/* =========================================================
+   CREATE ORDER
+   ========================================================= */
 
 exports.create = async (req, res) => {
 
-    const client = await db.connect();
+    let client = null;
 
     try {
+
+        /* CONNECT TO DATABASE */
+
+        client = await db.connect();
+
+
+        /* GET CUSTOMER DATA */
 
         const {
             name,
@@ -19,18 +28,29 @@ exports.create = async (req, res) => {
         } = req.body;
 
 
+        /* VALIDATE CUSTOMER */
+
         if (
             !name ||
+            !String(name).trim() ||
             !phone ||
-            !address
+            !String(phone).trim() ||
+            !address ||
+            !String(address).trim()
         ) {
 
             return res.status(400).json({
+
+                success: false,
+
                 message:
                     "Name, phone and address are required"
+
             });
         }
 
+
+        /* VALIDATE ITEMS */
 
         if (
             !Array.isArray(items) ||
@@ -38,11 +58,17 @@ exports.create = async (req, res) => {
         ) {
 
             return res.status(400).json({
+
+                success: false,
+
                 message:
                     "Order items are required"
+
             });
         }
 
+
+        /* START TRANSACTION */
 
         await client.query("BEGIN");
 
@@ -50,7 +76,9 @@ exports.create = async (req, res) => {
         const resolvedItems = [];
 
 
-        /* FIND PRODUCTS */
+        /* =====================================================
+           FIND PRODUCTS
+           ===================================================== */
 
         for (const item of items) {
 
@@ -66,6 +94,8 @@ exports.create = async (req, res) => {
                 Number(item.qty);
 
 
+            /* VALIDATE QUANTITY */
+
             if (
                 !Number.isInteger(qty) ||
                 qty <= 0
@@ -76,16 +106,22 @@ exports.create = async (req, res) => {
                 );
 
                 return res.status(400).json({
+
+                    success: false,
+
                     message:
                         "Invalid quantity"
+
                 });
             }
 
 
-            let productResult;
+            let productResult = null;
 
 
-            /* FIND BY ID */
+            /* =================================================
+               FIND PRODUCT BY ID
+               ================================================= */
 
             if (
                 Number.isInteger(itemId) &&
@@ -110,7 +146,9 @@ exports.create = async (req, res) => {
             }
 
 
-            /* FIND BY NAME */
+            /* =================================================
+               FIND PRODUCT BY NAME
+               ================================================= */
 
             if (
                 !productResult ||
@@ -124,8 +162,12 @@ exports.create = async (req, res) => {
                     );
 
                     return res.status(400).json({
+
+                        success: false,
+
                         message:
                             "Product not found"
+
                     });
                 }
 
@@ -150,9 +192,11 @@ exports.create = async (req, res) => {
             }
 
 
+            /* PRODUCT NOT FOUND */
+
             if (
                 !productResult ||
-                !productResult.rows.length
+                productResult.rows.length === 0
             ) {
 
                 await client.query(
@@ -160,16 +204,30 @@ exports.create = async (req, res) => {
                 );
 
                 return res.status(400).json({
+
+                    success: false,
+
                     message:
                         "Product not found",
-                    productId: itemId,
-                    productName: itemName
+
+                    productId:
+                        itemId,
+
+                    productName:
+                        itemName
+
                 });
             }
 
 
             const product =
                 productResult.rows[0];
+
+
+            const price =
+                Number(
+                    product.final_rate || 0
+                );
 
 
             resolvedItems.push({
@@ -185,15 +243,16 @@ exports.create = async (req, res) => {
 
                 qty,
 
-                price:
-                    Number(
-                        product.final_rate || 0
-                    )
+                price
+
             });
+
         }
 
 
-        /* TOTAL */
+        /* =====================================================
+           CALCULATE TOTAL
+           ===================================================== */
 
         let total = 0;
 
@@ -205,38 +264,63 @@ exports.create = async (req, res) => {
             total +=
                 item.price *
                 item.qty;
+
         }
 
 
-        /* ORDER NUMBER */
+        total =
+            Number(
+                total.toFixed(2)
+            );
 
-        const now = new Date();
+
+        /* =====================================================
+           CREATE ORDER NUMBER
+           ===================================================== */
+
+        const now =
+            new Date();
+
 
         const dateParts =
             new Intl.DateTimeFormat(
                 "en-GB",
                 {
-                    timeZone: "Asia/Kolkata",
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit"
+                    timeZone:
+                        "Asia/Kolkata",
+
+                    year:
+                        "numeric",
+
+                    month:
+                        "2-digit",
+
+                    day:
+                        "2-digit"
                 }
             ).formatToParts(now);
 
+
         const year =
             dateParts.find(
-                p => p.type === "year"
+                p =>
+                    p.type === "year"
             ).value;
+
 
         const month =
             dateParts.find(
-                p => p.type === "month"
+                p =>
+                    p.type === "month"
             ).value;
+
 
         const day =
             dateParts.find(
-                p => p.type === "day"
+                p =>
+                    p.type === "day"
             ).value;
+
 
         const orderDate =
             `${year}${month}${day}`;
@@ -267,7 +351,9 @@ exports.create = async (req, res) => {
             ).padStart(2, "0")}`;
 
 
-        /* CREATE ORDER */
+        /* =====================================================
+           INSERT ORDER
+           ===================================================== */
 
         const orderResult =
             await client.query(
@@ -296,20 +382,34 @@ exports.create = async (req, res) => {
                     $8,
                     $9
                 )
-                RETURNING id, order_number
+                RETURNING
+                    id,
+                    order_number
                 `,
                 [
+
                     orderNumber,
-                    name.trim(),
-                    phone.trim(),
+
+                    String(name).trim(),
+
+                    String(phone).trim(),
+
                     city
-                        ? city.trim()
+                        ? String(city).trim()
                         : "",
-                    address.trim(),
-                    message || "",
+
+                    String(address).trim(),
+
+                    message
+                        ? String(message)
+                        : "",
+
                     total,
+
                     "NEW",
+
                     "WHATSAPP"
+
                 ]
             );
 
@@ -318,7 +418,9 @@ exports.create = async (req, res) => {
             orderResult.rows[0].id;
 
 
-        /* ORDER ITEMS */
+        /* =====================================================
+           INSERT ORDER ITEMS
+           ===================================================== */
 
         for (
             const item of resolvedItems
@@ -346,21 +448,37 @@ exports.create = async (req, res) => {
                 )
                 `,
                 [
+
                     orderId,
+
                     item.productId,
+
                     item.productCode,
+
                     item.productName,
+
                     item.qty,
+
                     item.price
+
                 ]
             );
+
         }
 
+
+        /* =====================================================
+           COMMIT
+           ===================================================== */
 
         await client.query(
             "COMMIT"
         );
 
+
+        /* =====================================================
+           SUCCESS RESPONSE
+           ===================================================== */
 
         return res.status(201).json({
 
@@ -374,14 +492,35 @@ exports.create = async (req, res) => {
             orderNumber,
 
             total
+
         });
 
 
     } catch (error) {
 
-        await client.query(
-            "ROLLBACK"
-        );
+
+        /* =====================================================
+           ROLLBACK SAFELY
+           ===================================================== */
+
+        if (client) {
+
+            try {
+
+                await client.query(
+                    "ROLLBACK"
+                );
+
+            } catch (rollbackError) {
+
+                console.error(
+                    "ROLLBACK ERROR:",
+                    rollbackError
+                );
+
+            }
+
+        }
 
 
         console.error(
@@ -390,24 +529,43 @@ exports.create = async (req, res) => {
         );
 
 
+        /* =====================================================
+           DATABASE / SERVER ERROR
+           ===================================================== */
+
         return res.status(500).json({
+
+            success: false,
 
             message:
                 "Order creation failed",
 
             error:
                 error.message
-        });
 
+        });
 
     } finally {
 
-        client.release();
+
+        /* =====================================================
+           RELEASE CONNECTION
+           ===================================================== */
+
+        if (client) {
+
+            client.release();
+
+        }
+
     }
+
 };
 
 
-/* LIST ORDERS */
+/* =========================================================
+   LIST ORDERS
+   ========================================================= */
 
 exports.list = async (
     req,
@@ -440,6 +598,8 @@ exports.list = async (
 
         return res.json({
 
+            success: true,
+
             orders:
                 result.rows
 
@@ -456,14 +616,21 @@ exports.list = async (
 
         return res.status(500).json({
 
+            success: false,
+
             message:
                 error.message
+
         });
+
     }
+
 };
 
 
-/* UPDATE ORDER STATUS */
+/* =========================================================
+   UPDATE ORDER STATUS
+   ========================================================= */
 
 exports.updateStatus = async (
     req,
@@ -474,6 +641,7 @@ exports.updateStatus = async (
 
         const orderId =
             Number(req.params.id);
+
 
         const status =
             String(
@@ -490,16 +658,24 @@ exports.updateStatus = async (
 
             return res.status(400).json({
 
+                success: false,
+
                 message:
                     "Invalid order ID"
+
             });
+
         }
 
 
         const allowedStatuses = [
+
             "NEW",
+
             "CONFIRMED",
+
             "DELIVERED"
+
         ];
 
 
@@ -511,9 +687,13 @@ exports.updateStatus = async (
 
             return res.status(400).json({
 
+                success: false,
+
                 message:
                     "Invalid order status"
+
             });
+
         }
 
 
@@ -541,9 +721,13 @@ exports.updateStatus = async (
 
             return res.status(404).json({
 
+                success: false,
+
                 message:
                     "Order not found"
+
             });
+
         }
 
 
@@ -556,6 +740,7 @@ exports.updateStatus = async (
 
             order:
                 result.rows[0]
+
         });
 
 
@@ -569,8 +754,13 @@ exports.updateStatus = async (
 
         return res.status(500).json({
 
+            success: false,
+
             message:
                 error.message
+
         });
+
     }
+
 };
