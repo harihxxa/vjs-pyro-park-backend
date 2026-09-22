@@ -523,15 +523,18 @@ function addToCart(id){
 
     }
 
+    // Save cart and update cart count
     saveCart();
 
+    // If cart is already open, update its contents
     const drawer = document.getElementById("drawer");
 
     if(drawer && drawer.classList.contains("open")){
         renderCart();
-    }else{
-        openCart();
     }
+
+    // IMPORTANT:
+    // Do NOT open cart automatically after adding product
 }
 
 
