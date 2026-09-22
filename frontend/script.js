@@ -880,12 +880,13 @@ async function sendWhatsApp(){
             );
 
             alert(
-                "Database Error:\n\n" +
-                (
-                    data.message ||
-                    "Unable to save order."
-                )
-            );
+    "Database Error:\n\n" +
+    (
+        data.error ||
+        data.message ||
+        "Unable to save order."
+    )
+);
 
             return;
         }
