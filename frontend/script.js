@@ -214,78 +214,55 @@ async function loadBackendProducts(){
         }
 
         /*
-         * Backend products-ஐ மட்டும் update பண்ணும்.
-         * Local-ல் இருக்கும் 119 products DELETE ஆகாது.
+         * BACKEND DATABASE ONLY
+         *
+         * Old 119 local products remove ஆகும்.
+         * Database-ல் இருக்கும் products மட்டும் website-ல் வரும்.
          */
 
-        data.products.forEach(p => {
+        PRODUCTS = data.products.map(p => {
 
-            const backendId = Number(p.id);
-
-            const index = PRODUCTS.findIndex(
-                product => Number(product.id) === backendId
-            );
-
-            let category =
-                p.category_name ||
+            const category =
                 p.category ||
-                CATEGORY_MAP[Number(p.category_id)] ||
+                p.category_name ||
                 "Others";
 
-            const updatedProduct = {
+            return {
 
-                id: backendId,
+                id: Number(p.id),
 
                 name: p.name,
 
                 price: Number(
-                    p.final_rate ??
-                    p.price ??
-                    0
+                    p.final_rate ?? 0
                 ),
 
                 offer: Number(
-                    p.mrp ??
-                    p.offer ??
-                    0
+                    p.mrp ?? 0
                 ),
 
                 cat: category
 
             };
 
-            /*
-             * Same ID already exists:
-             * backend price/details update
-             */
-
-            if(index !== -1){
-
-                PRODUCTS[index] = {
-                    ...PRODUCTS[index],
-                    ...updatedProduct
-                };
-
-            }
-
-            /*
-             * Backend-ல் new product இருந்தால்
-             * local list-க்கும் add ஆகும்.
-             */
-
-            else{
-
-                PRODUCTS.push(updatedProduct);
-
-            }
-
         });
+
+
+        /*
+         * PRODUCT ORDER
+         *
+         * 1 → 2 → 3 → ... → 169
+         */
+
+        PRODUCTS.sort(
+            (a, b) => Number(a.id) - Number(b.id)
+        );
 
 
         console.log("================================");
         console.log("PRODUCT LIST LOADED ✅");
         console.log("Backend products:", data.products.length);
-        console.log("Total website products:", PRODUCTS.length);
+        console.log("Website products:", PRODUCTS.length);
         console.log("================================");
 
 
@@ -301,11 +278,6 @@ async function loadBackendProducts(){
             "PRODUCT LOAD FAILED ❌",
             error
         );
-
-        /*
-         * Backend fail ஆனாலும்
-         * local 119 products website-ல் இருக்கும்.
-         */
 
         categories();
         render();
