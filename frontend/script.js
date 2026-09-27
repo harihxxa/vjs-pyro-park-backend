@@ -732,7 +732,7 @@ function animateButterflyToCart(sourceEl){
 
         {
 
-            duration:1500,
+            duration:2300,
 
             easing:
                 "cubic-bezier(.2,.8,.3,1)"
