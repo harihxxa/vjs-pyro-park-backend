@@ -404,7 +404,7 @@ function render(){
 
                     <img
                         class="productImage"
-                        src="images/${p.id}.jpg"
+                        src="images/${p.id}.jpeg"
                         alt="${p.name}"
                         loading="lazy"
                         onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
