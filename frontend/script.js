@@ -929,6 +929,8 @@ saveCart();
 
 testBackend();
 
+PRODUCTS = [];
+
 loadBackendProducts();
 
 function continueShopping(){
