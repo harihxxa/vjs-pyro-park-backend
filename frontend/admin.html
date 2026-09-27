@@ -12,8 +12,118 @@
 
 <title>VJS Pyro Park - Admin Dashboard</title>
 
-
 <style>
+
+/* PRODUCT AVAILABILITY */
+
+.products-box{
+    background:#151515;
+    border:1px solid #333;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:25px;
+}
+
+.products-box h2{
+    margin-bottom:15px;
+}
+
+.product-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    padding:13px 0;
+    border-bottom:1px solid #333;
+}
+
+.product-row:last-child{
+    border-bottom:none;
+}
+
+.product-name{
+    font-weight:bold;
+}
+
+.product-code{
+    color:#999;
+    font-size:12px;
+    margin-top:4px;
+}
+
+.soldout-toggle{
+    min-width:120px;
+    border:none;
+    border-radius:7px;
+    padding:9px 16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.soldout-toggle.on{
+    background:#8B2E2E !important;
+    color:#fff !important;
+    border:1px solid #8B2E2E;
+}
+
+.soldout-toggle.off{
+    background:#C6A15B !important;
+    color:#111 !important;
+    border:1px solid #C6A15B;
+}
+
+.productAvailabilityBtn{
+    background:#C6A15B;
+    color:#111;
+    border:none;
+    padding:11px 18px;
+    border-radius:7px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-bottom:25px;
+}
+
+.productAvailabilityBtn:hover{
+    opacity:0.9;
+}
+
+#productAvailabilitySection{
+    display:none;
+}
+
+.availability-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.availability-header h2{
+    color:#C6A15B;
+}
+
+.backBtn{
+    background:#222;
+    color:#C6A15B;
+    border:1px solid #C6A15B;
+    padding:9px 16px;
+    border-radius:7px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+@media (max-width:600px){
+    .product-row{
+        align-items:flex-start;
+    }
+    .soldout-toggle{
+        min-width:105px;
+        padding:8px 10px;
+        font-size:12px;
+    }
+}
 
 *{
     box-sizing:border-box;
@@ -354,6 +464,52 @@ tr:hover{
         <div class="card">
             <p>Confirmed Orders</p>
             <h3 id="confirmedOrders">0</h3>
+        </div>
+
+    </div>
+
+    <!-- PRODUCT AVAILABILITY BUTTON -->
+
+    <button
+        class="productAvailabilityBtn"
+        onclick="openProductAvailability()">
+
+        Product Availability
+
+    </button>
+
+
+    <!-- PRODUCT AVAILABILITY PAGE -->
+
+    <div id="productAvailabilitySection">
+
+        <div class="availability-header">
+
+            <h2>
+                Product Availability
+            </h2>
+
+            <button
+                class="backBtn"
+                onclick="closeProductAvailability()">
+
+                ← Back to Dashboard
+
+            </button>
+
+        </div>
+
+
+        <div class="products-box">
+
+            <div id="productsTable">
+
+                <div class="empty">
+                    Loading products...
+                </div>
+
+            </div>
+
         </div>
 
     </div>
@@ -965,6 +1121,313 @@ function renderOrders(){
     });
 }
 
+/* PRODUCT AVAILABILITY PAGE */
+
+function openProductAvailability(){
+
+    document.querySelector(".top").style.display = "none";
+
+    document.getElementById(
+        "message"
+    ).style.display = "none";
+
+    document.querySelectorAll(
+        ".stats"
+    ).forEach(
+        section => {
+            section.style.display = "none";
+        }
+    );
+
+    document.querySelector(
+        ".filters"
+    ).style.display = "none";
+
+    document.querySelector(
+        ".table-box"
+    ).style.display = "none";
+
+    document.querySelector(
+        ".productAvailabilityBtn"
+    ).style.display = "none";
+
+    document.getElementById(
+        "productAvailabilitySection"
+    ).style.display = "block";
+
+    loadProducts();
+}
+
+
+function closeProductAvailability(){
+
+    document.getElementById(
+        "productAvailabilitySection"
+    ).style.display = "none";
+
+    document.querySelector(".top").style.display = "flex";
+
+    document.getElementById(
+        "message"
+    ).style.display = "block";
+
+    document.querySelectorAll(
+        ".stats"
+    ).forEach(
+        section => {
+            section.style.display = "grid";
+        }
+    );
+
+    document.querySelector(
+        ".filters"
+    ).style.display = "flex";
+
+    document.querySelector(
+        ".table-box"
+    ).style.display = "block";
+
+    document.querySelector(
+        ".productAvailabilityBtn"
+    ).style.display = "inline-block";
+}
+
+
+/* PRODUCT SOLD OUT MANAGEMENT */
+
+async function loadProducts(){
+
+    const box =
+        document.getElementById(
+            "productsTable"
+        );
+
+
+    try{
+
+        const response =
+            await fetch(
+                `${API_URL}/api/products`,
+                {
+                    method:"GET",
+                    headers:{
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                "Failed to load products"
+            );
+
+        }
+
+
+        renderProducts(
+            data.products || []
+        );
+
+    }catch(error){
+
+        console.error(error);
+
+
+        box.innerHTML = `
+            <div class="empty">
+                Failed to load products.
+            </div>
+        `;
+
+    }
+
+}
+
+
+function renderProducts(products){
+
+    const box =
+        document.getElementById(
+            "productsTable"
+        );
+
+
+    if(!products.length){
+
+        box.innerHTML = `
+            <div class="empty">
+                No products found.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        products.map(
+            product => {
+
+                const soldOut =
+                    Boolean(
+                        product.is_sold_out
+                    );
+
+
+                return `
+
+                    <div class="product-row">
+
+                        <div>
+
+                            <div class="product-name">
+                                ${escapeHTML(
+                                    product.name
+                                )}
+                            </div>
+
+
+                            <div class="product-code">
+                                ${escapeHTML(
+                                    product.code || ""
+                                )}
+                            </div>
+
+                        </div>
+
+
+                        <button
+
+                            class="
+                                actionBtn
+                                soldout-toggle
+                                ${soldOut
+                                    ? "on"
+                                    : "off"
+                                }
+                            "
+
+                            onclick="
+                                toggleSoldOut(
+                                    ${product.id},
+                                    ${soldOut}
+                                )
+                            "
+                        >
+
+                            ${
+                                soldOut
+                                ? "SOLD OUT"
+                                : "AVAILABLE"
+                            }
+
+                        </button>
+
+                    </div>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+async function toggleSoldOut(
+    productId,
+    currentValue
+){
+
+    try{
+
+        const response =
+            await fetch(
+
+                `${API_URL}/api/products/${productId}/sold-out`,
+
+                {
+
+                    method:"PATCH",
+
+                    headers:{
+
+                        "Content-Type":
+                            "application/json",
+
+                        "Authorization":
+                            `Bearer ${token}`
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            is_sold_out:
+                                !currentValue
+
+                        })
+
+                }
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(response.status === 401){
+
+            localStorage.removeItem(
+                "adminToken"
+            );
+
+            localStorage.removeItem(
+                "adminUser"
+            );
+
+
+            window.location.href =
+                "registration.html";
+
+
+            return;
+
+        }
+
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                "Sold Out update failed"
+            );
+
+        }
+
+
+        await loadProducts();
+
+
+    }catch(error){
+
+        alert(
+            "Unable to update Sold Out status:\n" +
+            error.message
+        );
+
+    }
+
+}
 
 /* UPDATE STATUS */
 

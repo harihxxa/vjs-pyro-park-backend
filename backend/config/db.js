@@ -1,15 +1,23 @@
 const { Pool } = require("pg");
-
-const dbUrl = new URL(process.env.DATABASE_URL);
-
-// Remove sslmode from DATABASE_URL so pg does not override our SSL setting
-dbUrl.searchParams.delete("sslmode");
+require("dotenv").config();
 
 const pool = new Pool({
-    connectionString: dbUrl.toString(),
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     ssl: {
         rejectUnauthorized: false
     }
+});
+
+pool.on("connect", () => {
+    console.log("PostgreSQL database connected");
+});
+
+pool.on("error", (error) => {
+    console.error("PostgreSQL pool error:", error);
 });
 
 module.exports = pool;

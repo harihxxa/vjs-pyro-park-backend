@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS products (
     stock INTEGER DEFAULT 0,
     icon VARCHAR(20) DEFAULT '🎆',
     active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_sold_out BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_products_category

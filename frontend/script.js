@@ -128,9 +128,12 @@ async function loadBackendProducts(){
                     p.mrp ?? 0
                 ),
 
-                cat: category
+               cat: category,
 
-            };
+isSoldOut:
+    Boolean(p.is_sold_out)
+
+};
 
         });
 
@@ -326,9 +329,10 @@ function render(){
 
             <article class="card">
 
-                <span class="badge">
-                    OFFER
-                </span>
+                ${p.isSoldOut
+    ? `<span class="badge soldOutBadge">SOLD OUT</span>`
+    : `<span class="badge">OFFER</span>`
+}
 
 
                 <div class="productIcon">
@@ -386,12 +390,16 @@ function render(){
 
 
                 <button
-                    class="add"
-                    onclick="addToCart(${p.id}, this)">
+    class="add"
+    ${p.isSoldOut ? "disabled" : ""}
+    onclick="addToCart(${p.id}, this)">
 
-                    + ADD TO CART
+    ${p.isSoldOut
+        ? "SOLD OUT"
+        : "+ ADD TO CART"
+    }
 
-                </button>
+</button>
 
             </article>
 
@@ -484,6 +492,15 @@ function addToCart(id,buttonEl){
 
     }
 
+    if(product.isSoldOut){
+
+    alert(
+        "This product is sold out."
+    );
+
+    return;
+
+}
 
     const found =
         cart.find(

@@ -42,21 +42,35 @@ exports.list = async (req, res) => {
             ORDER BY p.id DESC
         `;
 
+        console.log("PRODUCT QUERY:", sql);
+        console.log("PRODUCT VALUES:", values);
+
         const result = await db.query(sql, values);
+
+        console.log(
+            "PRODUCT COUNT:",
+            result.rows.length
+        );
 
         return res.json({
             products: result.rows
         });
 
     } catch (error) {
-        console.error(error);
+
+        console.error(
+            "PRODUCT LIST ERROR:",
+            error
+        );
 
         return res.status(500).json({
-            message: error.message
+            success: false,
+            message: error.message,
+            code: error.code || null,
+            detail: error.detail || null
         });
     }
 };
-
 
 // Get single product
 exports.get = async (req, res) => {
@@ -155,5 +169,100 @@ exports.create = async (req, res) => {
         return res.status(500).json({
             message: error.message
         });
+    }
+};
+// Admin: update Sold Out status
+exports.updateSoldOut = async (req, res) => {
+    try {
+
+        if (req.user?.role !== "admin") {
+
+            return res.status(403).json({
+                message: "Admin access required"
+            });
+
+        }
+
+
+        const productId =
+            Number(req.params.id);
+
+
+        const isSoldOut =
+            req.body.is_sold_out;
+
+
+        if (
+            !Number.isInteger(productId) ||
+            productId <= 0
+        ) {
+
+            return res.status(400).json({
+                message: "Invalid product ID"
+            });
+
+        }
+
+
+        if (typeof isSoldOut !== "boolean") {
+
+            return res.status(400).json({
+                message:
+                    "is_sold_out must be true or false"
+            });
+
+        }
+
+
+        const result =
+            await db.query(
+                `
+                UPDATE products
+                SET is_sold_out = $1
+                WHERE id = $2
+                RETURNING
+                    id,
+                    name,
+                    is_sold_out
+                `,
+                [
+                    isSoldOut,
+                    productId
+                ]
+            );
+
+
+        if (!result.rows.length) {
+
+            return res.status(404).json({
+                message:
+                    "Product not found"
+            });
+
+        }
+
+
+        return res.json({
+
+            success: true,
+
+            product:
+                result.rows[0]
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "SOLD OUT UPDATE ERROR:",
+            error
+        );
+
+
+        return res.status(500).json({
+            message:
+                error.message
+        });
+
     }
 };

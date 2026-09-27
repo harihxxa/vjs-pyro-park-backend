@@ -10,19 +10,24 @@ router.get(
     controller.list
 );
 
-
-// Get single product
-router.get(
-    "/:id",
-    controller.get
-);
-
-
 // Create product
 router.post(
     "/",
     auth,
     controller.create
+);
+
+// Admin: update Sold Out status
+router.patch(
+    "/:id/sold-out",
+    auth,
+    controller.updateSoldOut
+);
+
+// Get single product
+router.get(
+    "/:id",
+    controller.get
 );
 
 

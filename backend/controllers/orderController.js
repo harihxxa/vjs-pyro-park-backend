@@ -136,7 +136,8 @@ exports.create = async (req, res) => {
                             code,
                             name,
                             final_rate,
-                            mrp
+                            mrp,
+                            is_sold_out
                         FROM products
                         WHERE id = $1
                         LIMIT 1
@@ -180,7 +181,8 @@ exports.create = async (req, res) => {
                             code,
                             name,
                             final_rate,
-                            mrp
+                            mrp,
+                            is_sold_out
                         FROM products
                         WHERE LOWER(TRIM(name))
                             =
@@ -221,13 +223,38 @@ exports.create = async (req, res) => {
 
 
             const product =
-                productResult.rows[0];
+    productResult.rows[0];
 
 
-            const price =
-                Number(
-                    product.final_rate || 0
-                );
+if (product.is_sold_out === true) {
+
+    await client.query(
+        "ROLLBACK"
+    );
+
+
+    return res.status(400).json({
+
+        success: false,
+
+        message:
+            `Product "${product.name}" is sold out`,
+
+        productId:
+            Number(product.id),
+
+        productName:
+            product.name
+
+    });
+
+}
+
+
+const price =
+    Number(
+        product.final_rate || 0
+    );
 
 
             resolvedItems.push({
