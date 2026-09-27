@@ -335,7 +335,7 @@ function render(){
 
                     <img
                         class="productImage"
-                        src="images/${p.id}.jpeg"
+                        src="images/${p.id - 119}.jpeg"
                         alt="${p.name}"
                         loading="lazy"
                         onerror="handleProductImageError(this, ${p.id})"
